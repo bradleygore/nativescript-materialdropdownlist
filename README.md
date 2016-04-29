@@ -134,7 +134,7 @@ To run the demo locally, run the following commands from the root folder after p
 `npm run setup` and `npm run demo.android`
 
 <p align="center">
-    <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdown/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
+    <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdownlist/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
 </p>
 
 ------------------

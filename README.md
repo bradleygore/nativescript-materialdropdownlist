@@ -1,8 +1,3 @@
-* about
-* usage
-** templates
-** styling
-
 # nativescript-materialdropdownlist
 ### Material-inspired dropdown list widget for NativeScript
 

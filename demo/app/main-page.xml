@@ -1,5 +1,66 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
-  <StackLayout>
-    <Label text="{{ message }}" class="message" textWrap="true"/>
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:MDL="nativescript-materialdropdownlist" loaded="pageLoaded">
+  <StackLayout style="padding-left: 10; padding-right: 10; padding-top: 10;">
+    <GridLayout rows="auto" columns="*, auto">
+        <StackLayout>
+            <label text="Color" />
+            <label style="height: 3; background-color: gray;" />
+        </StackLayout>
+
+        <MDL:MaterialDropdownList col="1" id="ddlColors"
+            itemsSeparatorColor="transparent" itemsRowHeight="30"
+            items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}" >
+        </MDL:MaterialDropdownList>
+    </GridLayout>
+    <!--<GridLayout rows="auto" columns="*, auto" style="margin-top: 10;">
+        <StackLayout>
+            <label text="Shapes" />
+            <label style="height: 3; background-color: gray;" />
+        </StackLayout>
+
+        <MDL:MaterialDropdownList col="1" id="ddlShapes"
+            items="{{ shapes }}" selectedIndex="{{ selectedShapeIndex }}" >
+        </MDL:MaterialDropdownList>
+    </GridLayout>-->
+    <GridLayout rows="auto" columns="auto,*" style="margin-top: 80;">
+        <MDL:MaterialDropdownList col="0" id="ddlShapes" iconText="{{ customDdlIcon }}"
+            items="{{ shapes }}" selectedIndex="{{ selectedShapeIndex }}" >
+        </MDL:MaterialDropdownList>
+        <StackLayout col="1">
+            <label text="Shapes" />
+            <label style="height: 3; background-color: gray;" />
+        </StackLayout>
+    </GridLayout>
+
+    <GridLayout rows="auto" columns="*,auto" style="margin-top: 80;">
+        <StackLayout col="0" style="text-align: right;">
+            <label text="Authors" />
+            <label style="height: 1; background-color: gray;" />
+        </StackLayout>
+        <MDL:MaterialDropdownList col="1" id="ddlAuthors"
+            items="{{ authors }}" selectedIndex="{{ selectedAuthorIndex }}" >
+            <MDL:MaterialDropdownList.selectedItemView>
+                <StackLayout>
+                    <label text="{{ selectedAuthor ? selectedAuthor.name : 'Select Author' }}" style="color: red; padding-left: 5;" />
+                    <label style="background-color: gray; height: 1;" />
+                </StackLayout>
+            </MDL:MaterialDropdownList.selectedItemView>
+
+            <MDL:MaterialDropdownList.itemsTemplate>
+                <label style="color: red; padding-top: 5; padding-bottom: 5;" text="{{ name }}" />
+            </MDL:MaterialDropdownList.itemsTemplate>
+        </MDL:MaterialDropdownList>
+    </GridLayout>
+
+    <GridLayout dock="bottom" rows="auto" columns="*, auto" style="margin-top: 240;">
+        <StackLayout>
+            <label text="Color" />
+            <label style="height: 3; background-color: gray;" />
+        </StackLayout>
+
+        <MDL:MaterialDropdownList col="1" id="ddlColors_bottom"
+            items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}" >
+        </MDL:MaterialDropdownList>
+    </GridLayout>
+
   </StackLayout>
 </Page>

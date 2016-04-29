@@ -1,76 +1,140 @@
-# Develop a NativeScript plugin now (w/ TypeScript)
+* about
+* usage
+** templates
+** styling
 
-## Getting started
+# nativescript-materialdropdownlist
+### Material-inspired dropdown list widget for NativeScript
 
-1. Download a zip of this seed.
-2. `npm install -g typescript`
-3. `cd ... path/to/unzip/folder ...`
-2. `npm run setup`
-3. Get to work.
+---------
 
-This seed expands on several things [presented here](http://developer.telerik.com/featured/creating-nativescript-plugins-in-typescript/).
+### Usage
 
-## Usage
+Install the plugin by running this command in your project root:
+`tns plugin add nativescript-textinputlayout`
 
-The seed is prepared to allow you to test and try out your plugin via the `demo` folder.
-Additionally it provides a proper `.gitignore` to keep GitHub tidy as well as `.npmignore` to ensure everyone is happy when you publish your plugin via npm.
+```xml
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:MDL="nativescript-materialdropdownlist">
 
-### Prepare
+    <StackLayout>
+        <GridLayout rows="auto" columns="*, auto">
+            <StackLayout>
+                <label text="Color" />
+                <label style="height: 3; background-color: gray;" />
+            </StackLayout>
 
-You'll want to change a couple things right away:
-
-* Change the name of the plugin all throughout `package.json` (including github repo, etc.) and the filenames.
-* Also in `package.json`, find this line:
-
-```
-"preparedemo": "npm run build; cd demo; tns plugin remove nativescript-yourplugin; tns plugin add ..; tns install",
-```
-
-Replace `nativescript-yourplugin` with your actual plugin name.
-
-### Typical development workflow:
-
-1. Make changes to plugin files
-2. Make changes in `demo` that would test those changes out
-3. `npm run demo.ios` or `npm run demo.android`  **(must be run from the root directory)**
-
-Those `demo` tasks are just general helpers. You may want to have more granular control on the device and/or emulator you want to run. For that, you can just run things the manual way:
-
-```
-cd demo
-
-// when developing, to ensure the latest code is built into the demo, it's a gaurantee to remove the plugin and add it back
-tns plugin remove nativescript-yourplugin // replace with your plugin name
-tns plugin add ..
-
-// manual platform adds
-tns platform add ios
-// and/or
-tns platform add android
+            <!--Dropdown List widget-->
+            <MDL:MaterialDropdownList col="1" id="ddlColors"
+                itemsSeparatorColor="transparent" itemsRowHeight="30"
+                items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}" >
+            </MDL:MaterialDropdownList>
+        </GridLayout>
+    </StackLayout>
+</Page>
 ```
 
-Then use any of the available options from the `tns` command line:
+#### Attributes
 
-* [Emulate your project](https://github.com/NativeScript/nativescript-cli#emulate-your-project)
-* [Run your project](https://github.com/NativeScript/nativescript-cli#run-your-project)
-* [Full list of commands](https://github.com/NativeScript/nativescript-cli#the-commands)
+Name | Description | Value Type | Default
+-----|-------------|------------|---------
+items | list of items to bind to as data source | Array or ObservableArray | null
+id | [Optional] prepended to generated ListView's ID as {id}_pickerList | string | ''
+iconText | [Optional] text to use for the icon label | string | '\ue5c5' (standard dropdown icon from [Material Icons](https://design.google.com/icons/#ic_arrow_drop_down))
+itemsSeparatorColor | [Optional] pass-through to ListView to set color for line separating items | string (Color) | ListView's default (light gray)
+itemsRowHeight | [Optional] pass-through to ListView to set height of each item in the list | number | ListView's default
+selectedIndex | [Optional] index of the item currently selected | number | null
 
-## Publish
+#### Custom Templates
 
-When you have everything ready to publish:
+This widget was designed with flexibility in mind, so you can use a custom template for the prompt view (the view the user taps to bring up the dropdown list) as well as define a view template for each item in the ListView.
 
-* Bump the version number in `package.json`
-* `npm run build` - **very important** - ensure the latest is built **before** you publish
-* `npm publish`
+*These custom templates will need to be used if the list of items is not just strings, but objects*
 
-## Contributing - Want to make the seed better?
+```xml
+<MDL:MaterialDropdownList col="1" id="ddlAuthors"
+    items="{{ authors }}" selectedIndex="{{ selectedAuthorIndex }}" >
 
-Or at least help keep it up to date with NativeScript releases, which would be excellent.
+    <!--Prompt or Selected Item Template-->
+    <MDL:MaterialDropdownList.selectedItemView>
+        <StackLayout>
+            <label text="{{ selectedAuthor ? selectedAuthor.name : 'Select Author' }}" style="color: red; padding-left: 5;" />
+            <label style="background-color: gray; height: 1;" />
+        </StackLayout>
+    </MDL:MaterialDropdownList.selectedItemView>
 
+    <!--Template to pass to the ListView-->
+    <MDL:MaterialDropdownList.itemsTemplate>
+        <label style="color: red; padding-top: 5; padding-bottom: 5;" text="{{ name }}" />
+    </MDL:MaterialDropdownList.itemsTemplate>
+</MDL:MaterialDropdownList>
 ```
-npm install -g typescript  // if you don't already have it
-git clone https://github.com/NathanWalker/nativescript-plugin-seed
-cd nativescript-plugin-seed
 
-// Improve!
+#### Default Prompt View
+
+If you don't use a custom template, we kept design-ability in mind. The default prompt view's elements all have specific purposes and individual IDs and CSS classes to make styling easy. If there were an XML template for it, here is what it would be:
+
+```xml
+<grid-layout rows="auto, auto" columns="*, auto" id="mdlLayout" class="mdl-container">
+
+    <!--Label where the value from the selected item gets put-->
+    <label id="mdlSelectedValue" row="0" col="0" class="mdl-value" />
+
+    <!--Label where the icon text gets put-->
+    <label id="mdlIcon" row="0" col="1" class="mdl-icon" />
+
+    <!--Label to hold no next but act as an underline across the entire widget - i.e. set height and background-color in a style rule-->
+    <label id="mdlUnderline" row="1" col="0" colSpan="2" class="mdl-underline" />
+
+</grid-layout>
 ```
+
+#### Styling
+
+Styling these dropdowns couldn't be simpler. Just create CSS rules based on the classes and IDs shown above. Given the dynamic nature of these types of lists, you will want to set a standard height for all dropdown lists, fortunately there's also a CSS Class specifically for those: **mdl-pickerList**. Here's an example of some things you can do to style these:
+
+```css
+.mdl-pickerList {
+    /*common styles for ALL dropdown lists*/
+    height: 80;
+    min-width: 60;
+    background-color: white;
+    border-color: blue;
+    border-width: 1;
+}
+
+/*different styles for specific lists - remember ID is container's ID + _pickerList*/
+#ddlColors_pickerList {
+    border-color: silver;
+}
+
+#ddlShapes_pickerList {
+    border-color: orange;
+    border-width: 4;
+    min-width: 80;
+}
+
+#ddlAuthors_pickerList {
+    min-width: 200;
+}
+
+#ddlShapes_pickerList label {
+    /*If a custom itemsTemplate is not used, ListView defaults to a Label*/
+    padding-top: 4;
+    padding-bottom: 4;
+    padding-left: 2;
+    color: blue;
+}
+```
+-----------------
+
+### Demo
+
+To run the demo locally, run the following commands from the root folder after pulling down this repo:
+`npm run setup` and `npm run demo.android`
+
+<p align="center">
+    <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdown/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
+</p>
+
+------------------

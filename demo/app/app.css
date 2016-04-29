@@ -1,6 +1,57 @@
-﻿.message {
-  color: #000;
-  font-size: 20;
-  horizontal-align: center;
-  padding:20;
+﻿#mdlSelectedValue {
+    font-weight: bold;
+}
+
+.mdl-underline {
+    height: 3;
+    background-color: gray;
+}
+
+.mdl-icon {
+    font-family: MaterialIcons;
+    font-size: 16;
+    color: darkgray;
+    padding-left: 10;
+    padding-right: 10;
+    text-align: left;
+    vertical-align: center;
+}
+
+.md-icon {
+    font-family: MaterialIcons;
+    font-size: 16;
+}
+
+.mdl-pickerList {
+    height: 80;
+    min-width: 60;
+    background-color: white;
+    border-color: blue;
+    border-width: 1;
+}
+
+.mdl-pickerList-container {
+    background-color: white;
+    padding: 2;
+}
+
+#ddlColors_pickerList {
+    border-color: silver;
+}
+
+#ddlShapes_pickerList {
+    border-color: orange;
+    border-width: 4;
+    min-width: 80;
+}
+
+#ddlShapes_pickerList label {
+    padding-top: 4;
+    padding-bottom: 4;
+    padding-left: 2;
+    color: blue;
+}
+
+#ddlAuthors_pickerList {
+    min-width: 200;
 }

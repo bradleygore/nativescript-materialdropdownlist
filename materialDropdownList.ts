@@ -414,6 +414,10 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     private _getDataItem(index: number): any {
+        if (!types.isDefined(this.items)) {
+            return '';
+        }
+
         return this.items.getItem ? this.items.getItem(index) : this.items[index];
     }
 

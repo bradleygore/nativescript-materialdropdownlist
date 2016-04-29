@@ -83,6 +83,11 @@ declare module "md-dropdownlist" {
         iconText: string;
 
         /**
+         * Gets or sets the target view where the backdrop will be added
+         * /
+        targetViewId: string;
+
+        /**
          * Forces the Dropdown to reload all its items.
          */
         refresh();

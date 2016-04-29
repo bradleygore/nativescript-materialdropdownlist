@@ -33,7 +33,8 @@ const ITEM_VIEW: string = 'selectedItemView',
     PICKER_CLASS: string = 'mdl-pickerList',
     PICKER_WRAPPER_CLASS: string = 'mdl-pickerList-wrapper',
     SCREEN_WIDTH: number = platform.screen.mainScreen.widthDIPs,
-    SCREEN_HEIGHT: number = platform.screen.mainScreen.heightDIPs;
+    SCREEN_HEIGHT: number = platform.screen.mainScreen.heightDIPs,
+    TARGET_VIEW_ID_PROP: string = 'targetViewId';
 
 function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var mdl = <MaterialDropdownList>data.object;
@@ -65,7 +66,7 @@ function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChang
     mdl._onSelectedIndexPropertyChanged(data);
 }
 
-function onIconTextPropertyChange(data: dependencyObservable.PropertyChangeData) {
+function onIconTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var mdl = <MaterialDropdownList>data.object;
     mdl._onIconTextPropertyChanged(data);
 }
@@ -79,6 +80,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     private _isDirty: boolean = false;
     private _backdrop: absoluteLayout.AbsoluteLayout;
     private _listPicker: listViewModule.ListView;
+    private _targetViewId: string;
 
     public static itemsProperty = new dependencyObservable.Property(
         ITEMS,
@@ -146,7 +148,16 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         new proxy.PropertyMetadata(
             undefined,
             dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            onIconTextPropertyChange
+            onIconTextPropertyChanged
+        )
+    );
+
+    public static targetViewIdProperty = new dependencyObservable.Property(
+        TARGET_VIEW_ID_PROP,
+        MDL,
+        new proxy.PropertyMetadata(
+            undefined,
+            dependencyObservable.PropertyMetadataSettings.None
         )
     );
 
@@ -156,6 +167,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         let gv: gridLayout.GridLayout = new gridLayout.GridLayout();
         gv.id = DEFAULT_SELECTED_VIEW_ID;
         this.selectedItemView = gv;
+
+        console.log(`targetViewId = ${this.targetViewId}`);
     }
 
     public onLoaded() {
@@ -169,7 +182,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     public onUnloaded() {
         if (this._backdrop) {
             this._backdrop._removeView(this._listPicker);
-            this.page._removeView(this._backdrop);
+            this._getTargetView()._removeView(this._backdrop);
             delete this._backdrop;
             delete this._listPicker;
         }
@@ -224,6 +237,13 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
     set iconText(value : string) {
         this._setValue(MaterialDropdownList.iconTextProperty, value);
+    }
+
+    get targetViewId(): string {
+        return this._getValue(MaterialDropdownList.targetViewIdProperty);
+    }
+    set targetViewId(value: string) {
+        this._setValue(MaterialDropdownList.targetViewIdProperty, value);
     }
 
 
@@ -328,7 +348,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             this._backdrop.visibility = enums.Visibility.collapse;
             this._backdrop.cssClass = 'mdl-backdrop';
             this._backdrop.on('tap', this.closeList, this);
-            this.page._addView(this._backdrop);
+            this._getTargetView()._addView(this._backdrop);
         }
 
         this._backdrop.height = this.page.height;
@@ -411,6 +431,19 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             this._backdrop.visibility = enums.Visibility.collapse;
             this._listPicker.visibility = enums.Visibility.collapse;
         });
+    }
+
+    private _getTargetView(): viewModule.View | pageModule.Page {
+        if (types.isDefined(this.targetViewId)) {
+            let target = this.page.getViewById(this.targetViewId);
+            if (target) {
+                return target;
+            } else {
+                console.log(`MaterialDropdownList: Unable to find view "${this.targetViewId}"`);
+            }
+        }
+
+        return this.page;
     }
 
     private _getDataItem(index: number): any {

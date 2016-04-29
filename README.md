@@ -3,6 +3,10 @@
 
 ---------
 
+<p align="center">
+    <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdownlist/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
+</p>
+
 ### Usage
 
 Install the plugin by running this command in your project root:
@@ -39,6 +43,7 @@ iconText | [Optional] text to use for the icon label | string | '\ue5c5' (standa
 itemsSeparatorColor | [Optional] pass-through to ListView to set color for line separating items | string (Color) | ListView's default (light gray)
 itemsRowHeight | [Optional] pass-through to ListView to set height of each item in the list | number | ListView's default
 selectedIndex | [Optional] index of the item currently selected | number | null
+targetViewId | [Optional] target view for the backdrop (AbsoluteLayout) and the ListView to render in. This is needed for using the widget in tab-views, etc... | string | null
 
 #### Custom Templates
 
@@ -89,6 +94,11 @@ If you don't use a custom template, we kept design-ability in mind. The default 
 Styling these dropdowns couldn't be simpler. Just create CSS rules based on the classes and IDs shown above. Given the dynamic nature of these types of lists, you will want to set a standard height for all dropdown lists, fortunately there's also a CSS Class specifically for those: **mdl-pickerList**. Here's an example of some things you can do to style these:
 
 ```css
+.mdl-backdrop {
+    /*The AbsoluteLayout that acts as backdrop to the dropdown*/
+    background-color: lightgrey;
+}
+
 .mdl-pickerList {
     /*common styles for ALL dropdown lists*/
     height: 80;
@@ -127,9 +137,5 @@ Styling these dropdowns couldn't be simpler. Just create CSS rules based on the 
 
 To run the demo locally, run the following commands from the root folder after pulling down this repo:
 `npm run setup` and `npm run demo.android`
-
-<p align="center">
-    <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdownlist/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
-</p>
 
 ------------------

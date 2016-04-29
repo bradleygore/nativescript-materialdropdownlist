@@ -167,8 +167,6 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         let gv: gridLayout.GridLayout = new gridLayout.GridLayout();
         gv.id = DEFAULT_SELECTED_VIEW_ID;
         this.selectedItemView = gv;
-
-        console.log(`targetViewId = ${this.targetViewId}`);
     }
 
     public onLoaded() {

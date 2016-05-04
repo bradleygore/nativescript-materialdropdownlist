@@ -84,8 +84,13 @@ declare module "md-dropdownlist" {
 
         /**
          * Gets or sets the target view where the backdrop will be added
-         * /
+         */
         targetViewId: string;
+
+        /**
+         * Offset top for actionBar
+         */
+        offsetActionBarHeight: boolean;
 
         /**
          * Forces the Dropdown to reload all its items.

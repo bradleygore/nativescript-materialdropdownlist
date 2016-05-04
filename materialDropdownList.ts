@@ -26,6 +26,7 @@ const ITEM_VIEW: string = 'selectedItemView',
     LBL_VAL_ID: string = 'mdlSelectedValue',
     LBL_ICON_ID: string = 'mdlIcon',
     LBL_UNDERLINE_ID: string = 'mdlUnderline',
+    OFFSET_ACTIONBAR_PROP: string = 'offsetActionBarHeight',
     ICON_TEXT_PROP: string = 'iconText',
     DEFAULT_ICON_TEXT: string = '\ue5c5',
     DEFAULT_SELECTED_VIEW_ID: string = 'mdlLayout',
@@ -161,12 +162,22 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         )
     );
 
+    public static offsetActionBarHeightProperty = new dependencyObservable.Property(
+        OFFSET_ACTIONBAR_PROP,
+        MDL,
+        new proxy.PropertyMetadata(
+            undefined,
+            dependencyObservable.PropertyMetadataSettings.AffectsLayout
+        )
+    );
+
     constructor() {
         super();
 
         let gv: gridLayout.GridLayout = new gridLayout.GridLayout();
         gv.id = DEFAULT_SELECTED_VIEW_ID;
         this.selectedItemView = gv;
+        this.offsetActionBarHeight = false;
     }
 
     public onLoaded() {
@@ -242,6 +253,13 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
     set targetViewId(value: string) {
         this._setValue(MaterialDropdownList.targetViewIdProperty, value);
+    }
+
+    get offsetActionBarHeight(): boolean {
+        return this._getValue(MaterialDropdownList.offsetActionBarHeightProperty);
+    }
+    set offsetActionBarHeight(value: boolean) {
+        this._setValue(MaterialDropdownList.offsetActionBarHeightProperty, value);
     }
 
 
@@ -339,6 +357,10 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             y: number = srcLocation.y,
             actionBarHeight: number = (<pageModule.Page>this.page).actionBar.visibility === enums.Visibility.visible ?
                 (<pageModule.Page>this.page).actionBar.getActualSize().height : 0;
+
+        if (this.offsetActionBarHeight) {
+            y = y - actionBarHeight;
+        }
 
         if (!types.isDefined(this._backdrop)) {
             this._backdrop = new absoluteLayout.AbsoluteLayout();

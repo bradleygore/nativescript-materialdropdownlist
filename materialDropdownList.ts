@@ -279,6 +279,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         if (data.newValue instanceof observableArray.ObservableArray) {
             weakEvents.addWeakEventListener(data.newValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
+
+        this._requestRefresh();
     }
 
     _onListItemsTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -351,10 +353,11 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     public expandList(arg: observable.EventData) {
-        let srcLocation: { x: number, y: number } = (<any>this.selectedItemView).getLocationOnScreen(),
+        let pageLocation: { x: number, y: number } = (<any>this.page).getLocationOnScreen(),
+            srcLocation: { x: number, y: number } = (<any>this.selectedItemView).getLocationOnScreen(),
             selectedItemViewSize = this.selectedItemView.getActualSize(),
-            x: number = srcLocation.x,
-            y: number = srcLocation.y,
+            x: number = srcLocation.x - pageLocation.x,
+            y: number = srcLocation.y - pageLocation.y,
             actionBarHeight: number = (<pageModule.Page>this.page).actionBar.visibility === enums.Visibility.visible ?
                 (<pageModule.Page>this.page).actionBar.getActualSize().height : 0;
 

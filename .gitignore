@@ -13,11 +13,11 @@ node_modules
 .node_repl_history
 
 # Compiled JS files and their .map files
-*.js
+.js
 *.js.map
 
 # Demo
-demo/app/*.js
+demo/**/*.js
 demo/*.d.ts
 demo/*.js.map
 demo/platforms

@@ -263,7 +263,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
 
-    private _onItemsChanged(data: observable.EventData) {
+    private _onItemsChanged(data?: observable.EventData) {
         if (this._listPicker) {
             this._listPicker.items = this.items;
             this._listPicker.refresh();
@@ -280,7 +280,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             weakEvents.addWeakEventListener(data.newValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
         }
 
-        this._requestRefresh();
+        this._onItemsChanged();
     }
 
     _onListItemsTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -353,8 +353,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     public expandList(arg: observable.EventData) {
-        let pageLocation: { x: number, y: number } = (<any>this.page).getLocationOnScreen(),
-            srcLocation: { x: number, y: number } = (<any>this.selectedItemView).getLocationOnScreen(),
+        let pageLocation: viewModule.Point = this.page.getLocationOnScreen(),
+            srcLocation: viewModule.Point = this.selectedItemView.getLocationOnScreen(),
             selectedItemViewSize = this.selectedItemView.getActualSize(),
             x: number = srcLocation.x - pageLocation.x,
             y: number = srcLocation.y - pageLocation.y,

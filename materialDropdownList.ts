@@ -416,10 +416,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         //if wide enought to go off screen or if low enough to go off screen, handle
         let totalX: number = this._listPicker.translateX + this._listPicker.width + (this._listPicker.borderWidth * 2),
             totalY: number = this._listPicker.translateY + this._listPicker.height + (this._listPicker.borderWidth * 2),
-            maxX: number = Math.min(SCREEN_WIDTH,  pageSize.width - pageLocation.x),
-            maxY: number = Math.min(SCREEN_HEIGHT, pageSize.height - pageLocation.y);
-
-        console.log(`totalX: ${totalX}, totalY: ${totalY}, maxX: ${maxX}, maxY: ${maxY}, SCR_W: ${SCREEN_WIDTH}, SCR_H: ${SCREEN_HEIGHT}`);
+            maxX: number = Math.min(SCREEN_WIDTH,  pageSize.width + pageLocation.x),
+            maxY: number = Math.min(SCREEN_HEIGHT, pageSize.height + pageLocation.y);
 
         if (totalX > maxX) {
             this._listPicker.translateX = Math.max(

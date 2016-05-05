@@ -355,7 +355,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     public expandList(arg: observable.EventData) {
         let pageLocation: viewModule.Point = this.page.getLocationOnScreen(),
             srcLocation: viewModule.Point = this.selectedItemView.getLocationOnScreen(),
-            selectedItemViewSize = this.selectedItemView.getActualSize(),
+            pageSize: viewModule.Size = this.page.getActualSize(),
+            selectedItemViewSize: viewModule.Size = this.selectedItemView.getActualSize(),
             x: number = srcLocation.x - pageLocation.x,
             y: number = srcLocation.y - pageLocation.y,
             actionBarHeight: number = (<pageModule.Page>this.page).actionBar.visibility === enums.Visibility.visible ?
@@ -405,24 +406,29 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             this._listPicker.scrollToIndex(this.selectedIndex);
         }
 
-        this._listPicker.translateX = x;
-        this._listPicker.translateY =
-            y - this.selectedItemView.getMeasuredHeight() - selectedItemViewSize.height +
-                (this._listPicker.borderWidth * 2);
+        this._listPicker.translateX = Math.max(x, 0);
+        this._listPicker.translateY = Math.max(
+            y - this.selectedItemView.getMeasuredHeight() + this._listPicker.borderWidth,
+            0
+        );
         this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
 
         //if wide enought to go off screen or if low enough to go off screen, handle
-        let totalX: number = this._listPicker.translateX + this._listPicker.width,
-            totalY: number = this._listPicker.translateY + this._listPicker.height;
+        let totalX: number = this._listPicker.translateX + this._listPicker.width + (this._listPicker.borderWidth * 2),
+            totalY: number = this._listPicker.translateY + this._listPicker.height + (this._listPicker.borderWidth * 2),
+            maxX: number = Math.min(SCREEN_WIDTH,  pageSize.width - pageLocation.x),
+            maxY: number = Math.min(SCREEN_HEIGHT, pageSize.height - pageLocation.y);
 
-        if (totalX > SCREEN_WIDTH) {
+        console.log(`totalX: ${totalX}, totalY: ${totalY}, maxX: ${maxX}, maxY: ${maxY}, SCR_W: ${SCREEN_WIDTH}, SCR_H: ${SCREEN_HEIGHT}`);
+
+        if (totalX > maxX) {
             this._listPicker.translateX = Math.max(
                 0,
-                this._listPicker.translateX - (totalX - SCREEN_WIDTH) - 2
+                this._listPicker.translateX - (totalX - maxX) - (this._listPicker.borderWidth * 2)
             );
         }
 
-        if (totalY > (SCREEN_HEIGHT - actionBarHeight)) {
+        if (totalY > (maxY)) {
             this._listPicker.translateY = Math.max(
                 0,
                 this._listPicker.translateY - this._listPicker.height +

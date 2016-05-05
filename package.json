@@ -1,6 +1,6 @@
 {
   "name": "nativescript-materialdropdownlist",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Material-Inspired Dropdown List XML widget for NativeScript Apps",
   "main": "materialDropdownList.js",
   "nativescript": {

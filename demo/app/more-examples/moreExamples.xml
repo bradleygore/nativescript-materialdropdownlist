@@ -1,0 +1,52 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd"
+    xmlns:MDL="nativescript-materialdropdownlist"
+    loaded="pageLoaded" navigatedTo="onNavigatedTo">
+
+    <TabView id="tabViewContainer">
+        <TabView.items>
+
+            <TabViewItem title="Tab">
+                <TabViewItem.view>
+                    <GridLayout rows="*" columns="*" id="pickerTarget">
+                        <StackLayout>
+                            <GridLayout rows="auto" columns="*, auto">
+                                <StackLayout>
+                                    <label text="Color" />
+                                    <label style="height: 3; background-color: gray;" />
+                                </StackLayout>
+
+                                <MDL:MaterialDropdownList col="1" id="ddlColors"
+                                    itemsSeparatorColor="transparent" itemsRowHeight="30"
+                                    items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}"
+                                    targetViewId="pickerTarget" >
+                                </MDL:MaterialDropdownList>
+                            </GridLayout>
+                            <GridLayout rows="auto" columns="auto,*" style="margin-top: 80;">
+                                <MDL:MaterialDropdownList col="0" id="ddlShapes"
+                                    items="{{ shapes }}" selectedIndex="{{ selectedShapeIndex }}"
+                                    targetViewId="pickerTarget" >
+                                </MDL:MaterialDropdownList>
+                                <StackLayout col="1">
+                                    <label text="Shapes" />
+                                    <label style="height: 3; background-color: gray;" />
+                                </StackLayout>
+                            </GridLayout>
+                        </StackLayout>
+                    </GridLayout>
+                </TabViewItem.view>
+            </TabViewItem>
+
+            <TabViewItem title="Modal">
+                <TabViewItem.view>
+                    <StackLayout style="horizontal-align: center; vertical-align: center; padding-top: 20;">
+                        <Label text="{{ selectedItem || 'No item selected' }}" textWrap="true" />
+
+                        <Button text="Open Modal" tap="openModal" />
+                    </StackLayout>
+                </TabViewItem.view>
+            </TabViewItem>
+
+        </TabView.items>
+    </TabView>
+
+</Page>

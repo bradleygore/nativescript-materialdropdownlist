@@ -6,6 +6,7 @@ declare module "md-dropdownlist" {
     import view = require("ui/core/view");
     import dependencyObservable = require("ui/core/dependency-observable");
     import layoutBaseModule = require("ui/layouts/layout-base");
+    import observable = require("data/observable");
 
     /**
      * Represents a UI MaterialDropdownList component.
@@ -40,6 +41,11 @@ declare module "md-dropdownlist" {
          * Represents the selected index property
          */
         public static selectedIndexProperty: dependencyObservable.Property;
+
+        /**
+         * String value used when hooking into indexChange event
+         */
+        public static indexChangeEvent: string;
 
         /**
          * Represents the observable property backing the icon text to use for the icon label.
@@ -88,13 +94,29 @@ declare module "md-dropdownlist" {
         targetViewId: string;
 
         /**
-         * Offset top for actionBar
-         */
-        offsetActionBarHeight: boolean;
-
-        /**
          * Forces the Dropdown to reload all its items.
          */
         refresh();
+
+        /**
+         * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+         * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
+         * @param callback - Callback function which will be executed when event is raised.
+         * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+         */
+        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+
+        /**
+         * Raised when the selected index changes.
+         */
+        on(event: "indexChange", callback: (args: ISelectedIndexChangeData) => void, thisArg?: any);
+    }
+
+    export interface ISelectedIndexChangeData extends observable.EventData {
+
+        /**
+         * Index of the item that was selected
+         */
+        index: number;
     }
 }

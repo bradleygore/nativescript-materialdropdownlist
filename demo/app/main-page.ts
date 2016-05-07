@@ -1,5 +1,6 @@
 import * as observable from 'data/observable';
 import * as pages from 'ui/page';
+import * as frame from 'ui/frame';
 
 // Event handler for Page "loaded" event attached in main-page.xml
 export function pageLoaded(args: observable.EventData) {
@@ -30,4 +31,12 @@ export function pageLoaded(args: observable.EventData) {
                 page.bindingContext.set('selectedAuthor', page.bindingContext.get('authors')[pcd.value]);
             }
         });
+}
+
+export function onColorIndexChange(arg: any) {
+    console.log(`onColorIndexChange ${arg.index}`);
+}
+
+export function showMore() {
+    frame.topmost().navigate('more-examples/moreExamples');
 }

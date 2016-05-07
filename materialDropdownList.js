@@ -18,7 +18,7 @@ var types = require("utils/types");
 var labelModule = require("ui/label");
 var observableArray = require("data/observable-array");
 var weakEvents = require("ui/core/weak-event-listener");
-var ITEM_VIEW = 'selectedItemView', ITEMS = 'items', ITEMS_TEMPLATE = 'itemsTemplate', ITEMS_SEP_COLOR = 'itemsSeparatorColor', ITEMS_ROW_HEIGHT = 'itemsRowHeight', SELECTED_INDEX = 'selectedIndex', MDL = 'materialDropdownList', LBL_VAL_ID = 'mdlSelectedValue', LBL_ICON_ID = 'mdlIcon', LBL_UNDERLINE_ID = 'mdlUnderline', OFFSET_ACTIONBAR_PROP = 'offsetActionBarHeight', ICON_TEXT_PROP = 'iconText', DEFAULT_ICON_TEXT = '\ue5c5', DEFAULT_SELECTED_VIEW_ID = 'mdlLayout', BACKDROP_ID = 'mdlBackdrop', PICKER_CLASS = 'mdl-pickerList', PICKER_WRAPPER_CLASS = 'mdl-pickerList-wrapper', SCREEN_WIDTH = platform.screen.mainScreen.widthDIPs, SCREEN_HEIGHT = platform.screen.mainScreen.heightDIPs, TARGET_VIEW_ID_PROP = 'targetViewId';
+var ITEM_VIEW = 'selectedItemView', ITEMS = 'items', ITEMS_TEMPLATE = 'itemsTemplate', ITEMS_SEP_COLOR = 'itemsSeparatorColor', ITEMS_ROW_HEIGHT = 'itemsRowHeight', SELECTED_INDEX = 'selectedIndex', IDX_CHANGE_EVENT = 'indexChange', MDL = 'materialDropdownList', LBL_VAL_ID = 'mdlSelectedValue', LBL_ICON_ID = 'mdlIcon', LBL_UNDERLINE_ID = 'mdlUnderline', ICON_TEXT_PROP = 'iconText', DEFAULT_ICON_TEXT = '\ue5c5', DEFAULT_SELECTED_VIEW_ID = 'mdlLayout', BACKDROP_ID = 'mdlBackdrop', PICKER_CLASS = 'mdl-pickerList', PICKER_WRAPPER_CLASS = 'mdl-pickerList-wrapper', SCREEN_WIDTH = platform.screen.mainScreen.widthDIPs, SCREEN_HEIGHT = platform.screen.mainScreen.heightDIPs, TARGET_VIEW_ID_PROP = 'targetViewId';
 function onItemsPropertyChanged(data) {
     var mdl = data.object;
     mdl._onItemsPropertyChanged(data);
@@ -59,23 +59,7 @@ var MaterialDropdownList = (function (_super) {
         var gv = new gridLayout.GridLayout();
         gv.id = DEFAULT_SELECTED_VIEW_ID;
         this.selectedItemView = gv;
-        this.offsetActionBarHeight = false;
     }
-    MaterialDropdownList.prototype.onLoaded = function () {
-        if (this._isDirty) {
-            this.refresh();
-        }
-        _super.prototype.onLoaded.call(this);
-    };
-    MaterialDropdownList.prototype.onUnloaded = function () {
-        if (this._backdrop) {
-            this._backdrop._removeView(this._listPicker);
-            this._getTargetView()._removeView(this._backdrop);
-            delete this._backdrop;
-            delete this._listPicker;
-        }
-        _super.prototype.onUnloaded.call(this);
-    };
     Object.defineProperty(MaterialDropdownList.prototype, "selectedItemView", {
         get: function () {
             return this._getValue(MaterialDropdownList.selectedItemViewProperty);
@@ -156,22 +140,78 @@ var MaterialDropdownList = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(MaterialDropdownList.prototype, "offsetActionBarHeight", {
-        get: function () {
-            return this._getValue(MaterialDropdownList.offsetActionBarHeightProperty);
-        },
-        set: function (value) {
-            this._setValue(MaterialDropdownList.offsetActionBarHeightProperty, value);
-        },
-        enumerable: true,
-        configurable: true
-    });
     MaterialDropdownList.prototype._onItemsChanged = function (data) {
         if (this._listPicker) {
             this._listPicker.items = this.items;
             this._listPicker.refresh();
         }
         this._requestRefresh();
+    };
+    MaterialDropdownList.prototype._requestRefresh = function () {
+        this._isDirty = true;
+        if (this.isLoaded) {
+            this.refresh();
+        }
+    };
+    MaterialDropdownList.prototype._getTargetView = function () {
+        if (types.isDefined(this.targetViewId)) {
+            var target = this.page.getViewById(this.targetViewId);
+            if (target) {
+                return target;
+            }
+            else {
+                console.log("MaterialDropdownList: Unable to find view \"" + this.targetViewId + "\"");
+            }
+        }
+        return this.page;
+    };
+    MaterialDropdownList.prototype._getDataItem = function (index) {
+        if (!types.isDefined(this.items)) {
+            return '';
+        }
+        return this.items.getItem ? this.items.getItem(index) : this.items[index];
+    };
+    MaterialDropdownList.prototype._positionListPicker = function () {
+        if (!this._listPicker) {
+            console.error(MDL + " list picker must be instantiated before calculating its position");
+            return null;
+        }
+        var targetView = this._getTargetView(), isCustomTarget = targetView !== this.page, pageLocation = this.page.getLocationOnScreen(), srcLocation = this.selectedItemView.getLocationOnScreen(), targetLocation = isCustomTarget ? targetView.getLocationOnScreen() : pageLocation, pageSize = this.page.getActualSize(), targetSize = isCustomTarget ? targetView.getActualSize() : pageSize, selectedItemViewSize = this.selectedItemView.getActualSize(), x = srcLocation.x - targetLocation.x, y, maxX = Math.min(SCREEN_WIDTH, targetSize.width - targetLocation.x), maxY = Math.min(SCREEN_HEIGHT, targetSize.height - (isCustomTarget ? 0 : targetLocation.y));
+        if (isCustomTarget) {
+            y = srcLocation.y - targetLocation.y;
+        }
+        else {
+            y = srcLocation.y - this.selectedItemView.getMeasuredHeight() -
+                targetLocation.y + (this._listPicker.borderWidth * 2);
+        }
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+        this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
+        this._listPicker.translateX = x;
+        this._listPicker.translateY = y;
+        var totalX = x + this._listPicker.width + (this._listPicker.borderWidth * 2), totalY = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
+        if (totalX > maxX) {
+            this._listPicker.translateX = Math.max(0, x - (totalX - maxX));
+        }
+        if (totalY > maxY) {
+            this._listPicker.translateY = Math.max(0, y - this._listPicker.height +
+                selectedItemViewSize.height + (this._listPicker.borderWidth * 2));
+        }
+    };
+    MaterialDropdownList.prototype.onLoaded = function () {
+        if (this._isDirty) {
+            this.refresh();
+        }
+        _super.prototype.onLoaded.call(this);
+    };
+    MaterialDropdownList.prototype.onUnloaded = function () {
+        if (this._backdrop) {
+            this._backdrop._removeView(this._listPicker);
+            this._getTargetView()._removeView(this._backdrop);
+            delete this._backdrop;
+            delete this._listPicker;
+        }
+        _super.prototype.onUnloaded.call(this);
     };
     MaterialDropdownList.prototype._onItemsPropertyChanged = function (data) {
         if (data.oldValue instanceof observableArray.ObservableArray) {
@@ -221,12 +261,6 @@ var MaterialDropdownList = (function (_super) {
         }
         this._requestRefresh();
     };
-    MaterialDropdownList.prototype._requestRefresh = function () {
-        this._isDirty = true;
-        if (this.isLoaded) {
-            this.refresh();
-        }
-    };
     MaterialDropdownList.prototype.refresh = function () {
         if (types.isNullOrUndefined(this.items) || !types.isNumber(this.items.length)) {
             return;
@@ -239,11 +273,6 @@ var MaterialDropdownList = (function (_super) {
     };
     MaterialDropdownList.prototype.expandList = function (arg) {
         var _this = this;
-        var pageLocation = this.page.getLocationOnScreen(), srcLocation = this.selectedItemView.getLocationOnScreen(), pageSize = this.page.getActualSize(), selectedItemViewSize = this.selectedItemView.getActualSize(), x = srcLocation.x - pageLocation.x, y = srcLocation.y - pageLocation.y, actionBarHeight = this.page.actionBar.visibility === enums.Visibility.visible ?
-            this.page.actionBar.getActualSize().height : 0;
-        if (this.offsetActionBarHeight) {
-            y = y - actionBarHeight;
-        }
         if (!types.isDefined(this._backdrop)) {
             this._backdrop = new absoluteLayout.AbsoluteLayout();
             this._backdrop.id = BACKDROP_ID;
@@ -260,6 +289,7 @@ var MaterialDropdownList = (function (_super) {
             this._listPicker.on(listViewModule.ListView.itemTapEvent, function (arg) { return _this.onSelectionChange(arg.index); });
             this._listPicker.cssClass = PICKER_CLASS;
             this._listPicker.id = this.id + '_pickerList';
+            this._listPicker.visibility = enums.Visibility.visible;
             if (types.isDefined(this.itemsRowHeight)) {
                 this._listPicker.rowHeight = this.itemsRowHeight;
             }
@@ -275,18 +305,7 @@ var MaterialDropdownList = (function (_super) {
         if (types.isDefined(this.selectedIndex)) {
             this._listPicker.scrollToIndex(this.selectedIndex);
         }
-        this._listPicker.translateX = Math.max(x, 0);
-        this._listPicker.translateY = Math.max(y - this.selectedItemView.getMeasuredHeight() + this._listPicker.borderWidth, 0);
-        this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
-        var totalX = this._listPicker.translateX + this._listPicker.width + (this._listPicker.borderWidth * 2), totalY = this._listPicker.translateY + this._listPicker.height + (this._listPicker.borderWidth * 2), maxX = Math.min(SCREEN_WIDTH, pageSize.width + pageLocation.x), maxY = Math.min(SCREEN_HEIGHT, pageSize.height + pageLocation.y);
-        if (totalX > maxX) {
-            this._listPicker.translateX = Math.max(0, this._listPicker.translateX - (totalX - maxX) - (this._listPicker.borderWidth * 2));
-        }
-        if (totalY > (maxY)) {
-            this._listPicker.translateY = Math.max(0, this._listPicker.translateY - this._listPicker.height +
-                selectedItemViewSize.height + (this._listPicker.borderWidth * 2));
-        }
-        this._listPicker.visibility = enums.Visibility.visible;
+        this._positionListPicker();
         this._listPicker.opacity = 0;
         this._listPicker.animate({
             opacity: 1,
@@ -298,6 +317,11 @@ var MaterialDropdownList = (function (_super) {
         setTimeout(function () {
             _this.selectedIndex = idx;
             _this.closeList();
+            _this.notify({
+                object: _this,
+                eventName: MaterialDropdownList.indexChangeEvent,
+                index: idx
+            });
         }, 80);
     };
     MaterialDropdownList.prototype.closeList = function () {
@@ -307,26 +331,8 @@ var MaterialDropdownList = (function (_super) {
             duration: 300
         }).then(function () {
             _this._backdrop.visibility = enums.Visibility.collapse;
-            _this._listPicker.visibility = enums.Visibility.collapse;
+            _this._listPicker.opacity = 0;
         });
-    };
-    MaterialDropdownList.prototype._getTargetView = function () {
-        if (types.isDefined(this.targetViewId)) {
-            var target = this.page.getViewById(this.targetViewId);
-            if (target) {
-                return target;
-            }
-            else {
-                console.log("MaterialDropdownList: Unable to find view \"" + this.targetViewId + "\"");
-            }
-        }
-        return this.page;
-    };
-    MaterialDropdownList.prototype._getDataItem = function (index) {
-        if (!types.isDefined(this.items)) {
-            return '';
-        }
-        return this.items.getItem ? this.items.getItem(index) : this.items[index];
     };
     Object.defineProperty(MaterialDropdownList.prototype, "_childrenCount", {
         get: function () {
@@ -382,6 +388,7 @@ var MaterialDropdownList = (function (_super) {
         gridLayout.GridLayout.setRow(lblUnderline, 1);
         gridLayout.GridLayout.setColumnSpan(lblUnderline, 2);
     };
+    MaterialDropdownList.indexChangeEvent = IDX_CHANGE_EVENT;
     MaterialDropdownList.itemsProperty = new dependencyObservable.Property(ITEMS, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout, onItemsPropertyChanged));
     MaterialDropdownList.itemsTemplateProperty = new dependencyObservable.Property(ITEMS_TEMPLATE, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout, onListItemsTemplatePropertyChanged));
     MaterialDropdownList.itemsSeparatorColorProperty = new dependencyObservable.Property(ITEMS_SEP_COLOR, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onListItemsSeparatorPropertyChanged));
@@ -390,7 +397,6 @@ var MaterialDropdownList = (function (_super) {
     MaterialDropdownList.selectedIndexProperty = new dependencyObservable.Property(SELECTED_INDEX, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout, onSelectedIndexPropertyChanged));
     MaterialDropdownList.iconTextProperty = new dependencyObservable.Property(ICON_TEXT_PROP, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout, onIconTextPropertyChanged));
     MaterialDropdownList.targetViewIdProperty = new dependencyObservable.Property(TARGET_VIEW_ID_PROP, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None));
-    MaterialDropdownList.offsetActionBarHeightProperty = new dependencyObservable.Property(OFFSET_ACTIONBAR_PROP, MDL, new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.AffectsLayout));
     return MaterialDropdownList;
 }(viewModule.CustomLayoutView));
 exports.MaterialDropdownList = MaterialDropdownList;

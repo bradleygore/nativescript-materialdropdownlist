@@ -22,11 +22,11 @@ const ITEM_VIEW: string = 'selectedItemView',
     ITEMS_SEP_COLOR: string = 'itemsSeparatorColor',
     ITEMS_ROW_HEIGHT: string = 'itemsRowHeight',
     SELECTED_INDEX: string = 'selectedIndex',
+    IDX_CHANGE_EVENT: string = 'indexChange',
     MDL: string = 'materialDropdownList',
     LBL_VAL_ID: string = 'mdlSelectedValue',
     LBL_ICON_ID: string = 'mdlIcon',
     LBL_UNDERLINE_ID: string = 'mdlUnderline',
-    OFFSET_ACTIONBAR_PROP: string = 'offsetActionBarHeight',
     ICON_TEXT_PROP: string = 'iconText',
     DEFAULT_ICON_TEXT: string = '\ue5c5',
     DEFAULT_SELECTED_VIEW_ID: string = 'mdlLayout',
@@ -36,6 +36,10 @@ const ITEM_VIEW: string = 'selectedItemView',
     SCREEN_WIDTH: number = platform.screen.mainScreen.widthDIPs,
     SCREEN_HEIGHT: number = platform.screen.mainScreen.heightDIPs,
     TARGET_VIEW_ID_PROP: string = 'targetViewId';
+
+interface IListPositionWithBounds extends viewModule.Point {
+    width: number
+}
 
 function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var mdl = <MaterialDropdownList>data.object;
@@ -82,6 +86,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     private _backdrop: absoluteLayout.AbsoluteLayout;
     private _listPicker: listViewModule.ListView;
     private _targetViewId: string;
+
+    public static indexChangeEvent: string = IDX_CHANGE_EVENT;
 
     public static itemsProperty = new dependencyObservable.Property(
         ITEMS,
@@ -162,43 +168,6 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         )
     );
 
-    public static offsetActionBarHeightProperty = new dependencyObservable.Property(
-        OFFSET_ACTIONBAR_PROP,
-        MDL,
-        new proxy.PropertyMetadata(
-            undefined,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout
-        )
-    );
-
-    constructor() {
-        super();
-
-        let gv: gridLayout.GridLayout = new gridLayout.GridLayout();
-        gv.id = DEFAULT_SELECTED_VIEW_ID;
-        this.selectedItemView = gv;
-        this.offsetActionBarHeight = false;
-    }
-
-    public onLoaded() {
-        if (this._isDirty) {
-            this.refresh();
-        }
-
-        super.onLoaded();
-    }
-
-    public onUnloaded() {
-        if (this._backdrop) {
-            this._backdrop._removeView(this._listPicker);
-            this._getTargetView()._removeView(this._backdrop);
-            delete this._backdrop;
-            delete this._listPicker;
-        }
-
-        super.onUnloaded();
-    }
-
     get selectedItemView(): layoutBaseModule.LayoutBase {
         return this._getValue(MaterialDropdownList.selectedItemViewProperty);
     }
@@ -255,20 +224,131 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         this._setValue(MaterialDropdownList.targetViewIdProperty, value);
     }
 
-    get offsetActionBarHeight(): boolean {
-        return this._getValue(MaterialDropdownList.offsetActionBarHeightProperty);
-    }
-    set offsetActionBarHeight(value: boolean) {
-        this._setValue(MaterialDropdownList.offsetActionBarHeightProperty, value);
-    }
-
-
     private _onItemsChanged(data?: observable.EventData) {
         if (this._listPicker) {
             this._listPicker.items = this.items;
             this._listPicker.refresh();
         }
         this._requestRefresh();
+    }
+
+    private _requestRefresh() {
+        this._isDirty = true;
+        if (this.isLoaded) {
+            this.refresh();
+        }
+    }
+
+    private _getTargetView(): viewModule.View | pageModule.Page {
+        if (types.isDefined(this.targetViewId)) {
+            let target = this.page.getViewById(this.targetViewId);
+            if (target) {
+                return target;
+            } else {
+                console.log(`MaterialDropdownList: Unable to find view "${this.targetViewId}"`);
+            }
+        }
+
+        return this.page;
+    }
+
+    private _getDataItem(index: number): any {
+        if (!types.isDefined(this.items)) {
+            return '';
+        }
+
+        return this.items.getItem ? this.items.getItem(index) : this.items[index];
+    }
+
+    private _positionListPicker(): void {
+
+        if (!this._listPicker) {
+            console.error(`${MDL} list picker must be instantiated before calculating its position`);
+            return null;
+        }
+
+        let targetView: viewModule.View = this._getTargetView(),
+            isCustomTarget: boolean = targetView !== this.page,
+            pageLocation: viewModule.Point = this.page.getLocationOnScreen(),
+            srcLocation: viewModule.Point = this.selectedItemView.getLocationOnScreen(),
+            targetLocation: viewModule.Point = isCustomTarget ? targetView.getLocationOnScreen() : pageLocation,
+            pageSize: viewModule.Size = this.page.getActualSize(),
+            targetSize: viewModule.Size = isCustomTarget ? targetView.getActualSize() : pageSize,
+            selectedItemViewSize: viewModule.Size = this.selectedItemView.getActualSize(),
+            x: number = srcLocation.x - targetLocation.x,
+            y: number,
+            maxX: number = Math.min(
+                SCREEN_WIDTH,
+                targetSize.width - targetLocation.x
+            ),
+            maxY: number = Math.min(
+                SCREEN_HEIGHT,
+                targetSize.height - (isCustomTarget ? 0 : targetLocation.y)
+            );
+
+        if (isCustomTarget) {
+            y = srcLocation.y - targetLocation.y;
+        } else {
+            y = srcLocation.y - this.selectedItemView.getMeasuredHeight() -
+                targetLocation.y + (this._listPicker.borderWidth * 2);
+        }
+
+        //make sure neither x nor y are < 0
+        x = Math.max(0, x);
+        y = Math.max(0, y);
+
+        //Need to set width as it's dynamic and is used in calculating if we're outside max bounds
+        this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
+        this._listPicker.translateX = x;
+        this._listPicker.translateY = y;
+
+        //if wide enought to go off screen or if low enough to go off screen, handle
+        let totalX: number = x + this._listPicker.width + (this._listPicker.borderWidth * 2),
+            totalY: number = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
+
+        if (totalX > maxX) {
+            this._listPicker.translateX = Math.max(
+                0,
+                x - (totalX - maxX)
+            );
+        }
+
+        if (totalY > maxY) {
+            this._listPicker.translateY = Math.max(
+                0,
+                y - this._listPicker.height +
+                    selectedItemViewSize.height + (this._listPicker.borderWidth * 2)
+            );
+        }
+    }
+
+
+
+    constructor() {
+        super();
+
+        let gv: gridLayout.GridLayout = new gridLayout.GridLayout();
+        gv.id = DEFAULT_SELECTED_VIEW_ID;
+        this.selectedItemView = gv;
+    }
+
+    public onLoaded() {
+        if (this._isDirty) {
+            this.refresh();
+        }
+
+        super.onLoaded();
+    }
+
+    public onUnloaded() {
+        if (this._backdrop) {
+            this._backdrop._removeView(this._listPicker);
+            this._getTargetView()._removeView(this._backdrop);
+            delete this._backdrop;
+            delete this._listPicker;
+        }
+
+        super.onUnloaded();
     }
 
     _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -332,13 +412,6 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         this._requestRefresh();
     }
 
-    private _requestRefresh() {
-        this._isDirty = true;
-        if (this.isLoaded) {
-            this.refresh();
-        }
-    }
-
     public refresh() {
         if (types.isNullOrUndefined(this.items) || !types.isNumber(this.items.length)) {
             return;
@@ -353,18 +426,6 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     public expandList(arg: observable.EventData) {
-        let pageLocation: viewModule.Point = this.page.getLocationOnScreen(),
-            srcLocation: viewModule.Point = this.selectedItemView.getLocationOnScreen(),
-            pageSize: viewModule.Size = this.page.getActualSize(),
-            selectedItemViewSize: viewModule.Size = this.selectedItemView.getActualSize(),
-            x: number = srcLocation.x - pageLocation.x,
-            y: number = srcLocation.y - pageLocation.y,
-            actionBarHeight: number = (<pageModule.Page>this.page).actionBar.visibility === enums.Visibility.visible ?
-                (<pageModule.Page>this.page).actionBar.getActualSize().height : 0;
-
-        if (this.offsetActionBarHeight) {
-            y = y - actionBarHeight;
-        }
 
         if (!types.isDefined(this._backdrop)) {
             this._backdrop = new absoluteLayout.AbsoluteLayout();
@@ -385,6 +446,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
                 (arg: listViewModule.ItemEventData) => this.onSelectionChange(arg.index));
             this._listPicker.cssClass = PICKER_CLASS;
             this._listPicker.id = this.id + '_pickerList';
+            this._listPicker.visibility = enums.Visibility.visible;
 
             if (types.isDefined(this.itemsRowHeight)) {
                 this._listPicker.rowHeight = this.itemsRowHeight;
@@ -406,35 +468,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             this._listPicker.scrollToIndex(this.selectedIndex);
         }
 
-        this._listPicker.translateX = Math.max(x, 0);
-        this._listPicker.translateY = Math.max(
-            y - this.selectedItemView.getMeasuredHeight() + this._listPicker.borderWidth,
-            0
-        );
-        this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
-
-        //if wide enought to go off screen or if low enough to go off screen, handle
-        let totalX: number = this._listPicker.translateX + this._listPicker.width + (this._listPicker.borderWidth * 2),
-            totalY: number = this._listPicker.translateY + this._listPicker.height + (this._listPicker.borderWidth * 2),
-            maxX: number = Math.min(SCREEN_WIDTH,  pageSize.width + pageLocation.x),
-            maxY: number = Math.min(SCREEN_HEIGHT, pageSize.height + pageLocation.y);
-
-        if (totalX > maxX) {
-            this._listPicker.translateX = Math.max(
-                0,
-                this._listPicker.translateX - (totalX - maxX) - (this._listPicker.borderWidth * 2)
-            );
-        }
-
-        if (totalY > (maxY)) {
-            this._listPicker.translateY = Math.max(
-                0,
-                this._listPicker.translateY - this._listPicker.height +
-                    selectedItemViewSize.height + (this._listPicker.borderWidth * 2)
-            );
-        }
-
-        this._listPicker.visibility = enums.Visibility.visible;
+        this._positionListPicker();
         this._listPicker.opacity = 0;
 
         this._listPicker.animate({
@@ -447,6 +481,11 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         setTimeout(() => {
             this.selectedIndex = idx;
             this.closeList();
+            this.notify(<definition.ISelectedIndexChangeData>{
+                object: this,
+                eventName: MaterialDropdownList.indexChangeEvent,
+                index: idx
+            });
         }, 80);
     }
 
@@ -456,30 +495,11 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             duration: 300
         }).then(() => {
             this._backdrop.visibility = enums.Visibility.collapse;
-            this._listPicker.visibility = enums.Visibility.collapse;
+            this._listPicker.opacity = 0;
         });
     }
 
-    private _getTargetView(): viewModule.View | pageModule.Page {
-        if (types.isDefined(this.targetViewId)) {
-            let target = this.page.getViewById(this.targetViewId);
-            if (target) {
-                return target;
-            } else {
-                console.log(`MaterialDropdownList: Unable to find view "${this.targetViewId}"`);
-            }
-        }
 
-        return this.page;
-    }
-
-    private _getDataItem(index: number): any {
-        if (!types.isDefined(this.items)) {
-            return '';
-        }
-
-        return this.items.getItem ? this.items.getItem(index) : this.items[index];
-    }
 
 
     get _childrenCount(): number {

@@ -1,4 +1,5 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:MDL="nativescript-materialdropdownlist" loaded="pageLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+    xmlns:MDL="nativescript-materialdropdownlist" loaded="pageLoaded">
   <StackLayout style="padding-left: 10; padding-right: 10; padding-top: 10;">
     <GridLayout rows="auto" columns="*, auto">
         <StackLayout>
@@ -8,19 +9,9 @@
 
         <MDL:MaterialDropdownList col="1" id="ddlColors"
             itemsSeparatorColor="transparent" itemsRowHeight="30"
-            items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}" >
+            items="{{ colors }}" selectedIndex="{{ selectedColorIndex }}" indexChange="onColorIndexChange" >
         </MDL:MaterialDropdownList>
     </GridLayout>
-    <!--<GridLayout rows="auto" columns="*, auto" style="margin-top: 10;">
-        <StackLayout>
-            <label text="Shapes" />
-            <label style="height: 3; background-color: gray;" />
-        </StackLayout>
-
-        <MDL:MaterialDropdownList col="1" id="ddlShapes"
-            items="{{ shapes }}" selectedIndex="{{ selectedShapeIndex }}" >
-        </MDL:MaterialDropdownList>
-    </GridLayout>-->
     <GridLayout rows="auto" columns="auto,*" style="margin-top: 80;">
         <MDL:MaterialDropdownList col="0" id="ddlShapes" iconText="{{ customDdlIcon }}"
             items="{{ shapes }}" selectedIndex="{{ selectedShapeIndex }}" >
@@ -51,7 +42,11 @@
         </MDL:MaterialDropdownList>
     </GridLayout>
 
-    <GridLayout dock="bottom" rows="auto" columns="*, auto" style="margin-top: 240;">
+    <StackLayout style="horizontal-align: center; vertical-align: center;">
+        <Button text="Show More" tap="showMore" style="margin-top: 20; width: 200;" />
+    </StackLayout>
+
+    <GridLayout dock="bottom" rows="auto" columns="*, auto" style="margin-top: 180;">
         <StackLayout>
             <label text="Color" />
             <label style="height: 3; background-color: gray;" />

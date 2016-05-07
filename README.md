@@ -43,8 +43,8 @@ iconText | [Optional] text to use for the icon label | string | '\ue5c5' (standa
 itemsSeparatorColor | [Optional] pass-through to ListView to set color for line separating items | string (Color) | ListView's default (light gray)
 itemsRowHeight | [Optional] pass-through to ListView to set height of each item in the list | number | ListView's default
 selectedIndex | [Optional] index of the item currently selected | number | null
-targetViewId | [Optional] target view for the backdrop (AbsoluteLayout) and the ListView to render in. This is needed for using the widget in tab-views, etc... | string | null
-offsetActionBarHeight | [Optional] whether to offset the dropdown list's height by the action bar's height | boolean | false
+targetViewId | [Optional] target view for the backdrop (AbsoluteLayout) and the ListView to render in. This is specifically needed for best results using the widget in tab-views and modals - see demo for examples | string | null
+indexChange | [Optional] function to call when the selected index changes | Function | N/A (uses view event .notify() mechanism)
 
 #### Custom Templates
 

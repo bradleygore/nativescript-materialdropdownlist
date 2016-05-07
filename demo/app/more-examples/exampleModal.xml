@@ -1,0 +1,29 @@
+<Page xmlns="http://www.nativescript.org/tns.xsd"
+    shownModally="onShownModally"
+    xmlns:MDL="nativescript-materialdropdownlist">
+
+    <GridLayout rows="auto" columns="*" id="mdlItemsSelect">
+        <StackLayout>
+            <Label text="Dropdown in modal" style="padding-top: 15; padding-bottom: 15; background-color: lightblue; color: white; font-weight: bold; text-align: center; margin-bottom: 40; width: 100%;" />
+
+            <GridLayout rows="auto" columns="*, auto"  style="padding-left: 10; padding-right: 10; margin-bottom: 80;">
+                <StackLayout>
+                    <label text="Select an item"/>
+                    <label style="height: 3; background-color: gray;" />
+                </StackLayout>
+
+                <MDL:MaterialDropdownList col="1" id="ddlModalItems"
+                    itemsSeparatorColor="transparent" itemsRowHeight="20"
+                    items="{{ items }}" indexChange="onItemIndexChange"
+                    targetViewId="mdlItemsSelect">
+                </MDL:MaterialDropdownList>
+            </GridLayout>
+
+            <GridLayout columns="*,*" rows="auto">
+                <Button text="Cancel" tap="closeModal" />
+                <Button col="1" text="Save" tap="saveItem" isEnabled="{{ !!selectedItem }}"/>
+            </GridLayout>
+        </StackLayout>
+    </GridLayout>
+
+</Page>

@@ -17,7 +17,8 @@ export function pageLoaded(args: observable.EventData) {
             { name: 'Nathan Lowell' },
             {name: 'Brandon Sanderson'},
         ],
-        customDdlIcon: '\uE5C6'
+        customDdlIcon: '\uE5C6',
+        isLastDdlEnabled: true
     });
 
     page.bindingContext.set('selectedShape', page.bindingContext.get('shapes')[6]);

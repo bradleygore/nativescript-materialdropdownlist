@@ -426,6 +426,9 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     public expandList(arg: observable.EventData) {
+        if (!(this.isEnabled && this.isUserInteractionEnabled)) {
+            return;
+        }
 
         if (!types.isDefined(this._backdrop)) {
             this._backdrop = new absoluteLayout.AbsoluteLayout();

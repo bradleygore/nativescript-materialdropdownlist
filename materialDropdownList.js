@@ -273,6 +273,9 @@ var MaterialDropdownList = (function (_super) {
     };
     MaterialDropdownList.prototype.expandList = function (arg) {
         var _this = this;
+        if (!(this.isEnabled && this.isUserInteractionEnabled)) {
+            return;
+        }
         if (!types.isDefined(this._backdrop)) {
             this._backdrop = new absoluteLayout.AbsoluteLayout();
             this._backdrop.id = BACKDROP_ID;

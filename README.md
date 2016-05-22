@@ -10,7 +10,7 @@
 ### Usage
 
 Install the plugin by running this command in your project root:
-`tns plugin add nativescript-textinputlayout`
+`tns plugin add nativescript-materialdropdownlist`
 
 ```xml
 <Page xmlns="http://schemas.nativescript.org/tns.xsd"

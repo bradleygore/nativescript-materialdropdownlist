@@ -286,11 +286,16 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
                 targetSize.height - (isCustomTarget ? 0 : targetLocation.y)
             );
 
+        // console.log(`pageLocation: ${JSON.stringify(pageLocation, null, 4)}`);
+        // console.log(`selectedItemViewLocation: ${JSON.stringify(srcLocation, null, 4)}`);
+        // console.log(`selectedItemViewSize: ${JSON.stringify(selectedItemViewSize, null, 4)}`);
+        // console.log(`maxX: ${maxX}, maxY: ${maxY}`);
+
         if (isCustomTarget) {
             y = srcLocation.y - targetLocation.y;
         } else {
             y = srcLocation.y - this.selectedItemView.getMeasuredHeight() -
-                targetLocation.y + (this._listPicker.borderWidth * 2);
+                targetLocation.y - pageLocation.y;
         }
 
         //make sure neither x nor y are < 0
@@ -303,8 +308,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         this._listPicker.translateY = y;
 
         //if wide enought to go off screen or if low enough to go off screen, handle
-        let totalX: number = x + this._listPicker.width + (this._listPicker.borderWidth * 2),
-            totalY: number = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
+        let totalX: number = x + this._listPicker.width + (Number(this._listPicker.borderWidth) * 2),
+            totalY: number = y + this._listPicker.height + (Number(this._listPicker.borderWidth) * 2);
 
         if (totalX > maxX) {
             this._listPicker.translateX = Math.max(
@@ -317,7 +322,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             this._listPicker.translateY = Math.max(
                 0,
                 y - this._listPicker.height +
-                    selectedItemViewSize.height + (this._listPicker.borderWidth * 2)
+                    selectedItemViewSize.height + (Number(this._listPicker.borderWidth) * 2)
             );
         }
     }

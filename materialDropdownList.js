@@ -177,25 +177,29 @@ var MaterialDropdownList = (function (_super) {
             return null;
         }
         var targetView = this._getTargetView(), isCustomTarget = targetView !== this.page, pageLocation = this.page.getLocationOnScreen(), srcLocation = this.selectedItemView.getLocationOnScreen(), targetLocation = isCustomTarget ? targetView.getLocationOnScreen() : pageLocation, pageSize = this.page.getActualSize(), targetSize = isCustomTarget ? targetView.getActualSize() : pageSize, selectedItemViewSize = this.selectedItemView.getActualSize(), x = srcLocation.x - targetLocation.x, y, maxX = Math.min(SCREEN_WIDTH, targetSize.width - targetLocation.x), maxY = Math.min(SCREEN_HEIGHT, targetSize.height - (isCustomTarget ? 0 : targetLocation.y));
+        console.log("pageLocation: " + JSON.stringify(pageLocation, null, 4));
+        console.log("selectedItemViewLocation: " + JSON.stringify(srcLocation, null, 4));
+        console.log("selectedItemViewSize: " + JSON.stringify(selectedItemViewSize, null, 4));
+        console.log("maxX: " + maxX + ", maxY: " + maxY);
         if (isCustomTarget) {
             y = srcLocation.y - targetLocation.y;
         }
         else {
             y = srcLocation.y - this.selectedItemView.getMeasuredHeight() -
-                targetLocation.y + (this._listPicker.borderWidth * 2);
+                targetLocation.y - pageLocation.y;
         }
         x = Math.max(0, x);
         y = Math.max(0, y);
         this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
         this._listPicker.translateX = x;
         this._listPicker.translateY = y;
-        var totalX = x + this._listPicker.width + (this._listPicker.borderWidth * 2), totalY = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
+        var totalX = x + this._listPicker.width + (Number(this._listPicker.borderWidth) * 2), totalY = y + this._listPicker.height + (Number(this._listPicker.borderWidth) * 2);
         if (totalX > maxX) {
             this._listPicker.translateX = Math.max(0, x - (totalX - maxX));
         }
         if (totalY > maxY) {
             this._listPicker.translateY = Math.max(0, y - this._listPicker.height +
-                selectedItemViewSize.height + (this._listPicker.borderWidth * 2));
+                selectedItemViewSize.height + (Number(this._listPicker.borderWidth) * 2));
         }
     };
     MaterialDropdownList.prototype.onLoaded = function () {

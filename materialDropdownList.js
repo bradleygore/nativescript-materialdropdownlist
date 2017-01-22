@@ -172,11 +172,14 @@ var MaterialDropdownList = (function (_super) {
         return this.items.getItem ? this.items.getItem(index) : this.items[index];
     };
     MaterialDropdownList.prototype._positionListPicker = function () {
-        if (!this._listPicker) {
-            console.error(MDL + " list picker must be instantiated before calculating its position");
+        if (!this._listPickerContainer) {
+            console.error(MDL + " list picker container must be instantiated before calculating its position");
             return null;
         }
-        var targetView = this._getTargetView(), isCustomTarget = targetView !== this.page, pageLocation = this.page.getLocationOnScreen(), srcLocation = this.selectedItemView.getLocationOnScreen(), targetLocation = isCustomTarget ? targetView.getLocationOnScreen() : pageLocation, pageSize = this.page.getActualSize(), targetSize = isCustomTarget ? targetView.getActualSize() : pageSize, selectedItemViewSize = this.selectedItemView.getActualSize(), x = srcLocation.x - targetLocation.x, y, maxX = Math.min(SCREEN_WIDTH, targetSize.width - targetLocation.x), maxY = Math.min(SCREEN_HEIGHT, targetSize.height - (isCustomTarget ? 0 : targetLocation.y));
+        var targetView = this._getTargetView(), isCustomTarget = targetView !== this.page, pageLocation = this.page.getLocationOnScreen(), srcLocation = this.selectedItemView.getLocationOnScreen(), targetLocation = isCustomTarget ? targetView.getLocationOnScreen() : pageLocation, pageSize = this.page.getActualSize(), targetSize = isCustomTarget ? targetView.getActualSize() : pageSize, selectedItemViewSize = this.selectedItemView.getActualSize(), x = srcLocation.x, y = srcLocation.y, maxX = Math.min(SCREEN_WIDTH, targetSize.width - targetLocation.x), maxY = Math.min(SCREEN_HEIGHT, targetSize.height - (isCustomTarget ? 0 : targetLocation.y));
+        console.dump(pageLocation);
+        console.dump(srcLocation);
+        console.dump(targetLocation);
         if (isCustomTarget) {
             y = srcLocation.y - targetLocation.y;
         }
@@ -187,14 +190,14 @@ var MaterialDropdownList = (function (_super) {
         x = Math.max(0, x);
         y = Math.max(0, y);
         this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
-        this._listPicker.translateX = x;
-        this._listPicker.translateY = y;
+        this._listPickerContainer.translateX = x;
+        this._listPickerContainer.translateY = y;
         var totalX = x + this._listPicker.width + (this._listPicker.borderWidth * 2), totalY = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
         if (totalX > maxX) {
-            this._listPicker.translateX = Math.max(0, x - (totalX - maxX));
+            this._listPickerContainer.translateX = Math.max(0, x - (totalX - maxX));
         }
         if (totalY > maxY) {
-            this._listPicker.translateY = Math.max(0, y - this._listPicker.height +
+            this._listPickerContainer.translateY = Math.max(0, y - this._listPicker.height +
                 selectedItemViewSize.height + (this._listPicker.borderWidth * 2));
         }
     };
@@ -206,9 +209,10 @@ var MaterialDropdownList = (function (_super) {
     };
     MaterialDropdownList.prototype.onUnloaded = function () {
         if (this._backdrop) {
-            this._backdrop._removeView(this._listPicker);
+            this._backdrop._removeView(this._listPickerContainer);
             this._getTargetView()._removeView(this._backdrop);
             delete this._backdrop;
+            delete this._listPickerContainer;
             delete this._listPicker;
         }
         _super.prototype.onUnloaded.call(this);
@@ -287,7 +291,9 @@ var MaterialDropdownList = (function (_super) {
         this._backdrop.height = this.page.height;
         this._backdrop.width = this.page.width;
         this._backdrop.visibility = enums.Visibility.visible;
-        if (!this._listPicker) {
+        if (!types.isDefined(this._listPicker)) {
+            this._listPickerContainer = new absoluteLayout.AbsoluteLayout();
+            this._listPickerContainer.visibility = enums.Visibility.visible;
             this._listPicker = new listViewModule.ListView();
             this._listPicker.on(listViewModule.ListView.itemTapEvent, function (arg) { return _this.onSelectionChange(arg.index); });
             this._listPicker.cssClass = PICKER_CLASS;
@@ -299,7 +305,8 @@ var MaterialDropdownList = (function (_super) {
             if (types.isDefined(this.itemsSeparatorColor)) {
                 this._listPicker.separatorColor = this.itemsSeparatorColor;
             }
-            this._backdrop.addChild(this._listPicker);
+            this._listPickerContainer.addChild(this._listPicker);
+            this._backdrop.addChild(this._listPickerContainer);
             this._listPicker.items = this.items;
             if (types.isDefined(this.itemsTemplate)) {
                 this._listPicker.itemTemplate = this.itemsTemplate;
@@ -309,8 +316,8 @@ var MaterialDropdownList = (function (_super) {
             this._listPicker.scrollToIndex(this.selectedIndex);
         }
         this._positionListPicker();
-        this._listPicker.opacity = 0;
-        this._listPicker.animate({
+        this._listPickerContainer.opacity = 0;
+        this._listPickerContainer.animate({
             opacity: 1,
             duration: 300
         });
@@ -329,12 +336,12 @@ var MaterialDropdownList = (function (_super) {
     };
     MaterialDropdownList.prototype.closeList = function () {
         var _this = this;
-        this._listPicker.animate({
+        this._listPickerContainer.animate({
             opacity: 0,
             duration: 300
         }).then(function () {
             _this._backdrop.visibility = enums.Visibility.collapse;
-            _this._listPicker.opacity = 0;
+            _this._listPickerContainer.opacity = 0;
         });
     };
     Object.defineProperty(MaterialDropdownList.prototype, "_childrenCount", {

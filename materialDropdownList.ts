@@ -84,6 +84,7 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
 
     private _isDirty: boolean = false;
     private _backdrop: absoluteLayout.AbsoluteLayout;
+    private _listPickerContainer: absoluteLayout.AbsoluteLayout;
     private _listPicker: listViewModule.ListView;
     private _targetViewId: string;
 
@@ -262,8 +263,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
 
     private _positionListPicker(): void {
 
-        if (!this._listPicker) {
-            console.error(`${MDL} list picker must be instantiated before calculating its position`);
+        if (!this._listPickerContainer) {
+            console.error(`${MDL} list picker container must be instantiated before calculating its position`);
             return null;
         }
 
@@ -275,8 +276,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
             pageSize: viewModule.Size = this.page.getActualSize(),
             targetSize: viewModule.Size = isCustomTarget ? targetView.getActualSize() : pageSize,
             selectedItemViewSize: viewModule.Size = this.selectedItemView.getActualSize(),
-            x: number = srcLocation.x - targetLocation.x,
-            y: number,
+            x: number = srcLocation.x,// - targetLocation.x,
+            y: number = srcLocation.y,
             maxX: number = Math.min(
                 SCREEN_WIDTH,
                 targetSize.width - targetLocation.x
@@ -285,6 +286,10 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
                 SCREEN_HEIGHT,
                 targetSize.height - (isCustomTarget ? 0 : targetLocation.y)
             );
+
+        console.dump(pageLocation);
+        console.dump(srcLocation);
+        console.dump(targetLocation);
 
         if (isCustomTarget) {
             y = srcLocation.y - targetLocation.y;
@@ -299,22 +304,22 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
 
         //Need to set width as it's dynamic and is used in calculating if we're outside max bounds
         this._listPicker.width = Math.max(selectedItemViewSize.width, this._listPicker.minWidth);
-        this._listPicker.translateX = x;
-        this._listPicker.translateY = y;
+        this._listPickerContainer.translateX = x;
+        this._listPickerContainer.translateY = y;
 
         //if wide enought to go off screen or if low enough to go off screen, handle
         let totalX: number = x + this._listPicker.width + (this._listPicker.borderWidth * 2),
             totalY: number = y + this._listPicker.height + (this._listPicker.borderWidth * 2);
 
         if (totalX > maxX) {
-            this._listPicker.translateX = Math.max(
+            this._listPickerContainer.translateX = Math.max(
                 0,
                 x - (totalX - maxX)
             );
         }
 
         if (totalY > maxY) {
-            this._listPicker.translateY = Math.max(
+            this._listPickerContainer.translateY = Math.max(
                 0,
                 y - this._listPicker.height +
                     selectedItemViewSize.height + (this._listPicker.borderWidth * 2)
@@ -342,9 +347,10 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
 
     public onUnloaded() {
         if (this._backdrop) {
-            this._backdrop._removeView(this._listPicker);
+            this._backdrop._removeView(this._listPickerContainer);
             this._getTargetView()._removeView(this._backdrop);
             delete this._backdrop;
+            delete this._listPickerContainer;
             delete this._listPicker;
         }
 
@@ -443,7 +449,10 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         this._backdrop.width = this.page.width;
         this._backdrop.visibility = enums.Visibility.visible;
 
-        if (!this._listPicker) {
+        if (!types.isDefined(this._listPicker)) {
+            this._listPickerContainer = new absoluteLayout.AbsoluteLayout();
+            this._listPickerContainer.visibility = enums.Visibility.visible;
+
             this._listPicker = new listViewModule.ListView();
             this._listPicker.on(listViewModule.ListView.itemTapEvent,
                 (arg: listViewModule.ItemEventData) => this.onSelectionChange(arg.index));
@@ -458,7 +467,8 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
                 this._listPicker.separatorColor = this.itemsSeparatorColor;
             }
 
-            this._backdrop.addChild(this._listPicker);
+            this._listPickerContainer.addChild(this._listPicker);
+            this._backdrop.addChild(this._listPickerContainer);
 
             this._listPicker.items = this.items;
 
@@ -472,9 +482,9 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
         }
 
         this._positionListPicker();
-        this._listPicker.opacity = 0;
+        this._listPickerContainer.opacity = 0;
 
-        this._listPicker.animate({
+        this._listPickerContainer.animate({
             opacity: 1,
             duration: 300
         });
@@ -493,12 +503,12 @@ export class MaterialDropdownList extends viewModule.CustomLayoutView implements
     }
 
     public closeList() {
-        this._listPicker.animate({
+        this._listPickerContainer.animate({
             opacity: 0,
             duration: 300
         }).then(() => {
             this._backdrop.visibility = enums.Visibility.collapse;
-            this._listPicker.opacity = 0;
+            this._listPickerContainer.opacity = 0;
         });
     }
 

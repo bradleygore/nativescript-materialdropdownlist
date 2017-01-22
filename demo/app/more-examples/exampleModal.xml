@@ -6,7 +6,7 @@
         <StackLayout>
             <Label text="Dropdown in modal" style="padding-top: 15; padding-bottom: 15; background-color: lightblue; color: white; font-weight: bold; text-align: center; margin-bottom: 40; width: 100%;" />
 
-            <GridLayout rows="auto" columns="*, auto"  style="padding-left: 10; padding-right: 10; margin-bottom: 80;">
+            <GridLayout rows="auto" columns="*, 100"  style="padding-left: 10; padding-right: 10; margin-bottom: 80;">
                 <StackLayout>
                     <label text="Select an item"/>
                     <label style="height: 3; background-color: gray;" />
@@ -14,8 +14,8 @@
 
                 <MDL:MaterialDropdownList col="1" id="ddlModalItems"
                     itemsSeparatorColor="transparent" itemsRowHeight="20"
-                    items="{{ items }}" indexChange="onItemIndexChange"
-                    targetViewId="mdlItemsSelect">
+                    items="{{ items }}" indexChange="onItemIndexChange">
+                    <!- targetViewId="mdlItemsSelect" --->
                 </MDL:MaterialDropdownList>
             </GridLayout>
 

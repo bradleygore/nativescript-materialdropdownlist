@@ -3,6 +3,14 @@
 
 ---------
 
+# NO LONGER MAINTAINED
+
+I'm no longer actively maintaining this project. When I first built it, I was exploring NativeScript in my spare time. Presently, I do not have the spare time to continue maintaining this plugin. PRs are welcome, or if you wish to take over maintenance please submit an issue with your information and I'll contact you.
+
+\- Bradley
+
+---------
+
 <p align="center">
     <img height="750" src="https://raw.githubusercontent.com/bradleygore/nativescript-materialdropdownlist/master/materialdropdown.gif" alt="NativeScript Material Dropdown"/>
 </p>
